@@ -32,9 +32,22 @@ npx remotion render Repro --sequence --concurrency=1 out/frames-1
 npx remotion render Repro --sequence --frames=20-39 out/frames-20
 ```
 
-Because every entrance animation in `Repro` starts at `scale: 0`, stale frames are
-easy to spot: they are uniform black and JPEG-compress to ~13 KB vs ~45 KB for
-correct frames. Stale frames are also **byte-identical** to each other (same md5).
+Stale frames are **byte-identical** duplicates of one image (same md5), so the
+corruption is easy to quantify on any image format:
+
+```bash
+md5sum out/frames/* | awk '{print $1}' | sort | uniq -c | sort -rn | head
+# Verified from a clean install on the environment below:
+#   56 fe75da4dbca61295aab2f26530887a09   <- the one stale image (black: every
+#                                             entrance animation at scale: 0)
+#    1 f14c919157236a719408c9794294e09e   <- 19 unique correct frames
+#    1 c82d108a5fcd66f916f1c64dcc4d9795
+#    ...
+```
+
+Because every entrance animation in `Repro` starts at `scale: 0`, the stale image
+is uniform black. (When rendering jpeg sequences it compresses to ~13 KB vs
+~45 KB for correct frames.)
 
 ## Measured results (4.0.527, this machine)
 
