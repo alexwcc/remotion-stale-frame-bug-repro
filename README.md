@@ -1,6 +1,25 @@
 # Remotion stale-frame bug repro
 
-Minimal reproduction for a frame-capture bug in **Remotion 4.0.527** on Linux (Chrome Headless Shell), where **sustained renders capture stale frame state** — frames come out as an earlier frame's visuals, or as the initial pre-animation state (all entrance animations at their `from` values, i.e. a black frame for this composition).
+> ## ✅ RESOLUTION (upstream diagnosis by [JonnyBurger](https://github.com/remotion-dev/remotion/issues/11578#issuecomment-5799416720))
+>
+> **Not a Remotion bug** — the composition uses the CSS `scale` **property** with
+> numeric values under **React 18.3.1**, which only got `scale` support in React 19.
+> React 18 serializes non-zero numeric style values with a `'px'` suffix
+> (`scale: 0.06px` → invalid CSS → **silently dropped**; `scale: 0` works because
+> React special-cases zero). Elements therefore freeze at their *mount-time* scale:
+> pages mounting during entrance animations keep `scale: 0` (invisible → uniform
+> black frames that genuinely render byte-identical), pages mounting after settle
+> drop `scale: 1` → default `1` (look correct). This perfectly mimics
+> "stale/misfiled frame capture" — the OP's theory was wrong.
+>
+> **Fix: use `transform: scale(${x})`** (verified: 75/75 content frames, 73/75
+> byte-unique — only the three genuinely-zero frames identical). Alternatively
+> coerce to a string (`scale: String(x)`) or upgrade to React 19.
+>
+> Forensic fingerprint if you hit this: `element.style.cssText` shows `scale: 0`
+> but every **non-zero** `scale` is missing.
+
+Minimal reproduction for the behavior that mimics a frame-capture bug in **Remotion 4.0.527** on Linux (Chrome Headless Shell), where **sustained renders capture stale frame state** — frames come out as an earlier frame's visuals, or as the initial pre-animation state (all entrance animations at their `from` values, i.e. a black frame for this composition).
 
 Single-frame renders (`remotion still`) are **always pixel-correct**, and short render batches (≤ ~5 frames per page) are always correct — the bug only appears when a page receives a sustained stream of frame seeks.
 

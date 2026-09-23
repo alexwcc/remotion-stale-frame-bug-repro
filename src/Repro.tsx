@@ -42,12 +42,12 @@ export const Repro: React.FC = () => {
             fontSize: 150,
             color: "#FFFFFF",
             display: "inline-block",
-            scale: interpolate(frame, [2, 18], [0, 1], {
+            transform: `scale(${interpolate(frame, [2, 18], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.34, 1.56, 0.64, 1),
               output: "perceptual-scale",
-            }),
+            })})`,
           }}
         >
           AAAAA
@@ -70,7 +70,7 @@ export const Repro: React.FC = () => {
             fontSize: 150,
             color: "#FFFFFF",
             display: "inline-block",
-            scale: smoothstep(frame, 2, 16),
+            transform: `scale(${smoothstep(frame, 2, 16)})`,
           }}
         >
           BBBBB
@@ -96,7 +96,7 @@ export const Repro: React.FC = () => {
               height: 150,
               borderRadius: 75,
               backgroundColor: "#FFFFFF",
-              scale: smoothstep(frame, 2 + i * 4, 14),
+              transform: `scale(${smoothstep(frame, 2 + i * 4, 14)})`,
               translate: `0px ${Math.sin((frame + i * 17) / 11) * 7}px`,
             }}
           />
@@ -112,14 +112,14 @@ export const Repro: React.FC = () => {
           height: 270,
           display: "flex",
           alignItems: "center",
-          scale: spring({
+          transform: `scale(${spring({
             frame: frame - 2,
             fps,
             config: { damping: 10 },
             from: 0,
             to: 1,
             durationInFrames: 16,
-          }),
+          })})`,
         }}
       >
         <span
